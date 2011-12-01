@@ -1,0 +1,4 @@
+PPSL is the project plan snippet library. What we're trying to build is snippets 
+of instructions and code that describe complex technical procedures in encapsulated
+structures. This will allow people to build chains of these snippets to perform
+complex technical tasks using proven methodologies without having to prove them.
