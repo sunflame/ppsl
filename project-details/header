@@ -30,7 +30,7 @@
    <system-admin engagement="standby|active|none">
     <shared-hours>###</shared-hours>
     <blocked-hours>###</blocked-hours>
-    <per-node-hours>2</per-node-hours>
+    <per-node-hours>###</per-node-hours>
    </system-admin>
    <database-admin engagement="standby|active|none">
     <shared-hours>###</shared-hours>
@@ -47,7 +47,7 @@
    <system-admin engagement="standby|active|none">
     <shared-hours>###</shared-hours>
     <blocked-hours>###</blocked-hours>
-    <per-node-hours>2</per-node-hours>
+    <per-node-hours>###</per-node-hours>
    </system-admin>
    <database-admin engagement="standby|active|none">
     <shared-hours>###</shared-hours>
