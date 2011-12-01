@@ -1,15 +1,124 @@
 <snippet>
- <project-title></project-title>
- <project-description></project-description>
- <project-id></project-id>
+ <project-title>RHEL 4x to 5x upgrade for Oracle RAC</project-title>
+ <project-description>This upgrade restages an oracle 10g RAC environment running on RHEL 4.x to RHEL 5.x with minimal downtime or disruption.</project-description>
+ <project-id>rhel-4x-5x-oracle-rac</project-id>
  <client-name></client-name>
  <client-id-number></client-id-number>
  <client-network-number></client-network-number>
  <ticket-number></ticket-number>
  <service-level></service-level>
- <tasks-overview></tasks-overview>
- <time-estimates></time-estimates>
- <maintenance-windows></maintenance-windows>
+ <tasks-overview>
+  <task-overview>
+   <task-name>Major Upgrade RHEL 4.x to 5.x</task-name>
+   <system-admin>
+    <required>true</required>
+    <name></name>
+   </system-admin>
+   <database-admin>
+    <required>true</required>
+    <name></name>
+   </database-admin>
+  </task-overview>
+ </tasks-overview>
+ <time-estimates>
+  <pre-time-block id="0">
+   <client engagement="standby">
+    <shared-hours>0</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </client>   
+   <system-admin engagement="active">
+    <shared-hours>0</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>2</per-node-hours>
+   </system-admin>
+   <database-admin engagement="standby">
+    <shared-hours>0</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </database-admin>
+  </pre-time-block>
+  <maintenance-time-block id="0" type="online">
+   <client engagement="standby">
+    <shared-hours>0</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>2</per-node-hours>
+   </client>
+   <system-admin engagement="standby">
+    <shared-hours>0</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </system-admin>
+   <database-admin engagement="active">
+    <shared-hours>0</shared-hours>
+    <blocked-hours>2</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </database-admin>
+  </maintenance-time-block>
+  <pre-time-block id="1">
+   <client engagement="active">
+    <shared-hours>6</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </client>
+   <system-admin engagement="active">
+    <shared-hours>6</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </system-admin>
+   <database-admin engagement="standby">
+    <shared-hours>0</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </database-admin>
+  </pre-time-block>
+  <maintenance-time-block id="1" type="offline">
+   <client engagement="active">
+    <shared-hours>2</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </client>
+   <system-admin engagement="active">
+    <shared-hours>2</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </system-admin>
+   <database-admin engagement="active">
+    <shared-hours>2</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </database-admin>
+  </maintenance-time-block>
+  <post-time-block id="1">
+   <client engagement="active">
+    <shared-hours>6</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </client>
+   <system-admin engagement="active">
+    <shared-hours>6</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </system-admin>
+   <database-admin engagement="standby">
+    <shared-hours>0</shared-hours>
+    <blocked-hours>0</blocked-hours>
+    <per-node-hours>0</per-node-hours>
+   </database-admin>
+  </post-time-block>
+ </time-estimates>
+ <maintenance-windows>
+  <maintenance-window id="0" type="online">
+   <date></date>
+   <time></time>
+   <conference-details></conference-details>
+  </maintenance-window>
+  <maintenance-window id="1" type="offline">
+   <date></date>
+   <time></time>
+   <conference-details></conference-details>
+  </maintenance-window>
+ </maintenance-windows>
  <project-submitter></project-submitter>
  <project-notes></project-notes>
 </snippet>
