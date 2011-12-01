@@ -7,9 +7,78 @@
  <client-network-number></client-network-number>
  <ticket-number></ticket-number>
  <service-level></service-level>
- <tasks-overview></tasks-overview>
- <time-estimates></time-estimates>
- <maintenance-windows></maintenance-windows>
+ <tasks-overview>
+  <task-overview>
+   <task-name></task-name>
+   <system-admin>
+    <required>true|false</required>
+    <name></name>
+   </system-admin>
+   <database-admin>
+    <required>true|false</required>
+    <name></name>
+   </database-admin>
+  </task-overview>
+ </tasks-overview>
+ <time-estimates>
+  <pre-time-block id="###">
+   <client engagement="standby|active|none">
+    <shared-hours>###</shared-hours>
+    <blocked-hours>###</blocked-hours>
+    <per-node-hours>###</per-node-hours>
+   </client>   
+   <system-admin engagement="standby|active|none">
+    <shared-hours>###</shared-hours>
+    <blocked-hours>###</blocked-hours>
+    <per-node-hours>2</per-node-hours>
+   </system-admin>
+   <database-admin engagement="standby|active|none">
+    <shared-hours>###</shared-hours>
+    <blocked-hours>###</blocked-hours>
+    <per-node-hours>###</per-node-hours>
+   </database-admin>
+  </pre-time-block>
+  <maintenance-time-block id="###" type="online|offline">
+   <client engagement="standby|active|none">
+    <shared-hours>###</shared-hours>
+    <blocked-hours>###</blocked-hours>
+    <per-node-hours>###</per-node-hours>
+   </client>
+   <system-admin engagement="standby|active|none">
+    <shared-hours>###</shared-hours>
+    <blocked-hours>###</blocked-hours>
+    <per-node-hours>2</per-node-hours>
+   </system-admin>
+   <database-admin engagement="standby|active|none">
+    <shared-hours>###</shared-hours>
+    <blocked-hours>###</blocked-hours>
+    <per-node-hours>###</per-node-hours>
+   </database-admin>
+  </maintenance-time-block>
+  <post-time-block id="###">
+   <client engagement="standby|active|none">
+    <shared-hours>###</shared-hours>
+    <blocked-hours>###</blocked-hours>
+    <per-node-hours>###</per-node-hours>
+   </client>
+   <system-admin engagement="standby|active|none">
+    <shared-hours>###</shared-hours>
+    <blocked-hours>###</blocked-hours>
+    <per-node-hours>2</per-node-hours>
+   </system-admin>
+   <database-admin engagement="standby|active|none">
+    <shared-hours>###</shared-hours>
+    <blocked-hours>###</blocked-hours>
+    <per-node-hours>###</per-node-hours>
+  </post-time-block>
+ </time-estimates>
+ <maintenance-windows>
+  <maintenance-window id="###" type="online|offline">
+   <date></date>
+   <time></time>
+   <conference-details></conference-details>
+  </maintenance-window>
+ </maintenance-windows>
  <project-submitter></project-submitter>
  <project-notes></project-notes>
 </snippet>
