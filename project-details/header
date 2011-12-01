@@ -1,4 +1,7 @@
 <snippet>
+ <project-title></project-title>
+ <project-description></project-description>
+ <project-id></project-id>
  <client-name></client-name>
  <client-id-number></client-id-number>
  <client-network-number></client-network-number>
