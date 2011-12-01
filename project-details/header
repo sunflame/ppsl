@@ -1,3 +1,12 @@
 <snippet>
- <header-item>
+ <client-name></client-name>
+ <client-id-number></client-id-number>
+ <client-network-number></client-network-number>
+ <ticket-number></ticket-number>
+ <service-level></service-level>
+ <tasks-overview></tasks-overview>
+ <time-estimates></time-estimates>
+ <maintenance-windows></maintenance-windows>
+ <project-submitter></project-submitter>
+ <project-notes></project-notes>
 </snippet>
