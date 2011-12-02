@@ -3,7 +3,7 @@
  <project-description>This upgrade restages an oracle 10g RAC environment running on RHEL 4.x to RHEL 5.x with minimal downtime or disruption.</project-description>
  <project-id>rhel-4x-5x-oracle-rac</project-id>
  <project-tags>
-  <tag>oracle</tag>
+  <tag>oracle10g</tag>
   <tag>rhel4x</tag>
   <tag>rhel5x</tag>
   <tag>rhel4x-rhel5x-upgrade</tag>
