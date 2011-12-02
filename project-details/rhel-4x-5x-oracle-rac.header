@@ -2,6 +2,12 @@
  <project-title>RHEL 4x to 5x upgrade for Oracle RAC</project-title>
  <project-description>This upgrade restages an oracle 10g RAC environment running on RHEL 4.x to RHEL 5.x with minimal downtime or disruption.</project-description>
  <project-id>rhel-4x-5x-oracle-rac</project-id>
+ <project-tags>
+  <tag>oracle</tag>
+  <tag>rhel4x</tag>
+  <tag>rhel5x</tag>
+  <tag>rhel4x-rhel5x-upgrade</tag>
+ </prject-tags>
  <client-name></client-name>
  <client-id-number></client-id-number>
  <client-network-number></client-network-number>
@@ -122,3 +128,4 @@
  <project-submitter></project-submitter>
  <project-notes></project-notes>
 </snippet>
+
