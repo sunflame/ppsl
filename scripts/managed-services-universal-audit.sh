@@ -1104,7 +1104,7 @@ OracleKickstartDetails()
   $RACINSTANCES
   $ORABACKUP
 
-  racdb ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
+  racdb ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
   " >${ODIR}/adv-srv-${step}.out 2>&1
  elif [ -f /etc/mck/mck-environment.conf ]; then
   FILE=/etc/mck/mck-environment.conf
@@ -1144,12 +1144,12 @@ OracleKickstartDetails()
    ${CARELINKIP}
    $ORABACKUP
 
-   hcicl ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
-   carelink ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
-   bo ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
-   oem ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
-   forms ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
-   webapp ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
+   hcicl ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
+   carelink ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
+   bo ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
+   oem ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
+   forms ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
+   webapp ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
    " >${ODIR}/adv-srv-${step}.out 2>&1
   else
    DBTYPE=Standalone
@@ -1175,8 +1175,8 @@ OracleKickstartDetails()
    ${CARELINKIP}
    $ORABACKUP
 
-   standalonedb ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
-   standalonedb_on_san ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
+   standalonedb ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
+   standalonedb_on_san ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
    " >${ODIR}/adv-srv-${step}.out 2>&1
   fi
 
