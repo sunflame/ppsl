@@ -1243,11 +1243,12 @@ checkBootDrive()
 DRIVETYPE=$(df -h /boot|tail -n 1|awk '{print $1}'|awk -F'/' '{print $NF}')
 case $DRIVETYPE in 
 	c*d*p*) BOOTDRIVE=$(echo $DRIVETYPE|awk -F'p' '{print $1}')
+		REMOVEFLAG=$(cat /sys/block/cciss\!${BOOTDRIVE}/removable )
 		;; 
 	sd[a-z]*) BOOTDRIVE=$(echo ${DRIVETYPE}|awk -F"[0-9]" '{print $1}')
+		REMOVEFLAG=$(cat /sys/block/${BOOTDRIVE}/removable )
 		;; 
 esac
-REMOVEFLAG=$(cat /sys/block/*${BOOTDRIVE}*/removable )
 case ${REMOVEFLAG} in
  0) echo "Current /boot, ${BOOTDRIVE}, is acceptable";;
  1) echo "Current /boot, ${BOOTDRIVE}, is a removable disk, and unacceptable as /boot"
