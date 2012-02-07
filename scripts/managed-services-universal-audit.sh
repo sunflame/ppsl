@@ -1073,7 +1073,7 @@ OracleKickstartDetails()
   INTMASK=$(grep ^RAC_INT_NETMASK ${FILE} |awk -F'=' '{print $2}'|tr '\n' ' ')
   RACINSTANCES=$(grep ^RAC_DB ${FILE} |awk -F'=' '{print $2}'|tr '\n' ' ')
   ORABACKUP=$(grep /ora_backup /etc/fstab)
-  echo "$IPADDR
+  echo "	$IPADDR
   $HOSTNAME
   $NETMASK
   $DEFAULTGW
@@ -1095,6 +1095,8 @@ OracleKickstartDetails()
   $INTMASK
   $RACINSTANCES
   $ORABACKUP
+
+  racdb ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
   " >${ODIR}/adv-srv-${step}.out 2>&1
  elif [ -f /etc/mck/mck-environment.conf ]; then
   FILE=/etc/mck/mck-environment.conf
@@ -1112,7 +1114,7 @@ OracleKickstartDetails()
    INTMASK=$(grep ^RAC_INT_NETMASK ${FILE} |awk -F'=' '{print $2}'|tr '\n' ' ')
    RACINSTANCES=$(grep ^RAC_DB ${FILE} |awk -F'=' '{print $2}'|tr '\n' ' ')
    ORABACKUP=$(grep /ora_backup /etc/fstab)
-   echo "$IPADDR
+   echo "	$IPADDR
    $HOSTNAME
    $NETMASK
    $DEFAULTGW
@@ -1133,6 +1135,13 @@ OracleKickstartDetails()
    ${CARELINKHOST}
    ${CARELINKIP}
    $ORABACKUP
+
+   hcicl ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
+   carelink ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
+   bo ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
+   oem ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
+   forms ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
+   webapp ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
    " >${ODIR}/adv-srv-${step}.out 2>&1
   else
    DBTYPE=Standalone
@@ -1157,6 +1166,9 @@ OracleKickstartDetails()
    ${CARELINKHOST}
    ${CARELINKIP}
    $ORABACKUP
+
+   standalonedb ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
+   standalonedb_on_san ip=${IPADDR} nm=${NETMASK} gw=${GATEWAY} ns=${PDNS} hn=${HOSTNAME} gui=1
    " >${ODIR}/adv-srv-${step}.out 2>&1
   fi
 
@@ -1216,6 +1228,48 @@ fi >${ODIR}/adv-srv-${step}.out 2>&1
 
 displayOutput true "Disable RHN plugin"
 }
+
+checkBootDrive()
+{
+# Check if boot drive shows as removable. If it comes back a '1', a custom kickstart must be used that ignores this check
+BOOTDRIVE=$(df -h /boot|tail -n 1|awk -F'/' '{print $3}'|awk -F'1' '{print $1}')
+REMOVEFLAG=$(cat /sys/block/${BOOTDRIVE}/removable )
+case ${REMOVEFLAG} in
+ 0) echo "Current /boot, ${BOOTDRIVE}, is acceptable";;
+ 1) echo "Current /boot, ${BOOTDRIVE}, is a removable disk, and unacceptable as /boot"
+esac >${ODIR}/adv-srv-${step}.out 2>&1
+
+displayOutput true "Check /boot removable flag"
+}
+
+# Ensure adequare space for RHEL 5.x image. This is based on RAM
+# Options for resolving this include:
+#  skipping /var/crash (vc=0)
+#  controlling swap size (hcswap=4096)
+checkDiskSpace()
+{
+let MEMORY=$(grep MemTotal /proc/meminfo |awk '{print $2}')/1024
+let BOOTSIZE=$(fdisk -l /dev/${BOOTDRIVE}|grep Disk|awk '{print $5}')/1024/1024
+if [ $MEMORY -gt 16384 ]
+then
+ if [ $BOOTSIZE -lt 285000 ]
+ then
+  echo "Harddrive ${BOOTDRIVE} is too small, minimum size 285000MB, size is ${BOOTSIZE}MB"
+ else
+  echo "Harddrive ${BOOTDRIVE} meets size requirement"
+ fi
+else
+ if [ ${BOOTSIZE} -gt 139000 ]
+ then
+  echo "Harddrive ${BOOTDRIVE} is too small, minimum size is 139MB, size is ${BOOTSIZE}MB"
+ else
+  echo "Harddrive ${BOOTDRIVE} meets size requirement"
+ fi
+fi >${ODIR}/adv-srv-${step}.out 2>&1
+
+displayOutput true "Check disk size calculation against memory"
+}
+
 
 # This function copies the logs to ${ODIR}.
 finalize()

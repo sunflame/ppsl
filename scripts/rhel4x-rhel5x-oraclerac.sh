@@ -267,7 +267,7 @@ NODELIST="${PRIMARYNODE} ${SECONDARYNODE}"
 ########################################################################################################
 # PRIMARYNODE kickstart
 ########################################################################################################
-iconfigNode2Phase1()
+configNode2Phase1()
 {
 # As root user on ${PRIMARYNODE}
 # Define all customer specific data up front
