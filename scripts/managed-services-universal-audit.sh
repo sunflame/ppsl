@@ -99,6 +99,7 @@ setVars()
  SUCCESS=false
  LOG=/tmp/$(hostname)-adv-pre.log
  STEP=none
+ export PATH=${PATH}:/sbin:/usr/local/sbin:/usr/sbin
 
  while getopts ":rpDPnNdo:OCQR:c" options; do
   case ${options} in
@@ -328,11 +329,11 @@ runStep()
  debug && set -x
 
  if [ "${STEP}" = "ALLSTEPS" ]; then
-  STEPLIST="createODIR checkOS checkSAN fdiskAll procPartitions validateFileSystems extractLunmap gatherSANDetails copyFiles miscChecks checkASMDisks setupREPO checkLVM checkSwaps checkORACLEASM checkMessagesFileScsiErrors checkDeadSANPaths checkMSEVols checkMSEvg checkMSEKernel checkMSEErrors OracleKickstartDetails getTSM getHPMVer finalize"
+  STEPLIST="createODIR checkOS checkSAN fdiskAll procPartitions validateFileSystems extractLunmap gatherSANDetails copyFiles miscChecks checkASMDisks setupREPO checkLVM checkSwaps checkORACLEASM checkMessagesFileScsiErrors checkDeadSANPaths checkMSEVols checkMSEvg checkMSEKernel checkMSEErrors OracleKickstartDetails getTSM getHPMVer checkBootDrive checkDiskSpace finalize"
  elif [ "${STEP}" = "HPM" ]; then
   STEPLIST="createODIR checkOS checkSAN fdiskAll procPartitions validateFileSystems extractLunmap gatherSANDetails copyFiles miscChecks checkASMDisks checkLVM checkSwaps checkORACLEASM checkMessagesFileScsiErrors checkDeadSANPaths getTSM getHPMVer disableRHNPlugin finalize"
  elif [ "${STEP}" = "ORACLE" ]; then
-  STEPLIST="createODIR checkOS checkSAN fdiskAll procPartitions validateFileSystems extractLunmap gatherSANDetails copyFiles miscChecks checkASMDisks setupREPO checkLVM checkSwaps checkORACLEASM checkMessagesFileScsiErrors checkDeadSANPaths OracleKickstartDetails getTSM finalize"
+  STEPLIST="createODIR checkOS checkSAN fdiskAll procPartitions validateFileSystems extractLunmap gatherSANDetails copyFiles miscChecks checkASMDisks setupREPO checkLVM checkSwaps checkORACLEASM checkMessagesFileScsiErrors checkDeadSANPaths OracleKickstartDetails getTSM checkBootDrive checkDiskSpace finalize"
  elif [ "${STEP}" = "MSE" ]; then
   STEPLIST="createODIR checkOS checkSAN fdiskAll procPartitions validateFileSystems extractLunmap gatherSANDetails copyFiles miscChecks setupREPO checkLVM checkSwaps checkMessagesFileScsiErrors checkDeadSANPaths checkMSEVols checkMSEvg checkMSEKernel checkMSEErrors getTSM finalize"
  elif [ "${STEP}" = "createODIR" ]; then
@@ -1232,8 +1233,14 @@ displayOutput true "Disable RHN plugin"
 checkBootDrive()
 {
 # Check if boot drive shows as removable. If it comes back a '1', a custom kickstart must be used that ignores this check
-BOOTDRIVE=$(df -h /boot|tail -n 1|awk -F'/' '{print $3}'|awk -F'1' '{print $1}')
-REMOVEFLAG=$(cat /sys/block/${BOOTDRIVE}/removable )
+DRIVETYPE=$(df -h /boot|tail -n 1|awk '{print $1}'|awk -F'/' '{print $NF}')
+case $DRIVETYPE in 
+	c*d*p*) BOOTDRIVE=$(echo $DRIVETYPE|awk -F'p' '{print $1}')
+		;; 
+	sd[a-z]*) BOOTDRIVE=$(echo ${DRIVETYPE}|awk -F"[0-9]" '{print $1}')
+		;; 
+esac
+REMOVEFLAG=$(cat /sys/block/*${BOOTDRIVE}*/removable )
 case ${REMOVEFLAG} in
  0) echo "Current /boot, ${BOOTDRIVE}, is acceptable";;
  1) echo "Current /boot, ${BOOTDRIVE}, is a removable disk, and unacceptable as /boot"
@@ -1248,8 +1255,16 @@ displayOutput true "Check /boot removable flag"
 #  controlling swap size (hcswap=4096)
 checkDiskSpace()
 {
+DRIVETYPE=$(df -h /boot|tail -n 1|awk '{print $1}'|awk -F'/' '{print $NF}')
+case $DRIVETYPE in 
+	c*d*p*) BOOTDRIVE=$(echo $DRIVETYPE|awk -F'p' '{print $1}')
+		let BOOTSIZE=$(fdisk -l /dev/cciss/${BOOTDRIVE}|grep Disk|awk '{print $5}')/1024/1024
+		;; 
+	sd[a-z]*) BOOTDRIVE=$(echo ${DRIVETYPE}|awk -F"[0-9]" '{print $1}')
+		let BOOTSIZE=$(fdisk -l /dev/${BOOTDRIVE}|grep Disk|awk '{print $5}')/1024/1024
+		;; 
+esac
 let MEMORY=$(grep MemTotal /proc/meminfo |awk '{print $2}')/1024
-let BOOTSIZE=$(fdisk -l /dev/${BOOTDRIVE}|grep Disk|awk '{print $5}')/1024/1024
 if [ $MEMORY -gt 16384 ]
 then
  if [ $BOOTSIZE -lt 285000 ]
