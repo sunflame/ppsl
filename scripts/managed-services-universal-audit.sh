@@ -621,7 +621,14 @@ copyFiles()
 
  mkdir -p ${ODIR}/backup-files
 
- linux && FILES=''
+ linux && FILES='
+	/etc/sysconfig/network-scripts/ifcfg-eth1
+	/etc/fstab
+	/etc/emcp*
+	/etc/multipath.conf
+	/etc/multipath/bindings
+	/etc/sysconfig/oracledevices
+	/etc/sysconfig/oracleasm'
  aix && FILES=''
  hpux && FILES=''
 
