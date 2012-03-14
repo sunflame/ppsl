@@ -1070,7 +1070,31 @@ OracleKickstartDetails()
  MAILRELAY=$(grep ^DS /etc/mail/sendmail.cf|cut -c 3-)
  MOTD=$(cat /etc/motd)
  TZONE=$(date +%Z)
- if [ -f /etc/mck/rac.conf ]; then
+
+ if [ -f /etc/mck/SERVER_TYPE ]; then
+  SERVER_TYPE=$(cat /etc/mck/SERVER_TYPE)
+ fi
+
+ if [ "${SERVER_TYPE}x" = "oemx" ]; then
+  SIPADDR=$(grep IPADDR /etc/sysconfig/network-scripts/ifcfg-eth1)
+  echo " $IPADDR
+  $HOSTNAME
+  $NETMASK
+  $DEFAULTGW
+  $PDNS
+  $SDNS
+  $SPEED
+  $DOMAIN
+  $SEARCH
+  $NTPS
+  $MAILRELAY
+  $MOTD
+  $TZONE
+  ${SIPADDR:-N/A}
+
+   oem ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
+ "
+ elif [ -f /etc/mck/rac.conf ]; then
   FILE=/etc/mck/rac.conf
   RACNODES=$(grep ^RAC_NODE\\[ ${FILE} |awk -F'=' '{print $2}'|tr '\n' ' ')
   RACPUBIPS=$(grep ^RAC_PUB ${FILE} |awk -F'=' '{print $2}'|tr '\n' ' ')
@@ -1105,7 +1129,7 @@ OracleKickstartDetails()
   $ORABACKUP
 
   racdb ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
-  " >${ODIR}/adv-srv-${step}.out 2>&1
+  "
  elif [ -f /etc/mck/mck-environment.conf ]; then
   FILE=/etc/mck/mck-environment.conf
   CARELINKHOST=$(grep ^CARELINK_HOST ${FILE}|awk -F'=' '{print $2}')
@@ -1147,10 +1171,9 @@ OracleKickstartDetails()
    hcicl ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
    carelink ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
    bo ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
-   oem ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
    forms ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
    webapp ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
-   " >${ODIR}/adv-srv-${step}.out 2>&1
+   "
   else
    DBTYPE=Standalone
    echo "$IPADDR
@@ -1177,10 +1200,10 @@ OracleKickstartDetails()
 
    standalonedb ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
    standalonedb_on_san ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
-   " >${ODIR}/adv-srv-${step}.out 2>&1
+   "
   fi
 
- fi
+ fi >${ODIR}/adv-srv-${step}.out 2>&1
 
 
  displayOutput true "Gather kickstart details"
