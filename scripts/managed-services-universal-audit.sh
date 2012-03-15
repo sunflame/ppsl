@@ -375,10 +375,13 @@ displayOutput()
  export SUCCESS=$1
  export MSG="$2"
  export OUTPUTFILE=${ODIR}/adv-srv-${step}.out
+ line="......................................................................."
  if [ ${SUCCESS} = "true" ]; then
-  echo "${MSG}......SUCCESS"
+  #echo "${MSG}......SUCCESS"
+  printf "%s %s [SUCCESS]\n" "$MSG" "${line:${#MSG}}"
  else
-  echo "${MSG}......FAILURE"
+  #echo "${MSG}......FAILURE"
+  printf "%s %s [FAILURE]\n" "$MSG" "${line:${#MSG}}"
  fi
  lineBreak >>${LOG}
  echo "#### Output of ${step}, via ${OUTPUTFILE} ####" >>${LOG}
