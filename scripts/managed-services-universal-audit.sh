@@ -189,7 +189,7 @@ elif [ ${RDAC} = "true" ]; then
  elif [ ${HPQLOGIC} = "true" ]; then
   true
   echo "HP/Qlogic forced, setting HPQLOGIC=true"
-  echo "Sometimes this driver is not configured/used properly. If the"
+  echo "Sometimes this driver is misconfigured/used properly. If the"
   echo " system is using native mpio on top, force that option instead."
   SUCCESS=true
  elif [ ${NOSAN} = "true" ]; then
@@ -215,7 +215,7 @@ elif [ ${RDAC} = "true" ]; then
  elif [ -x "$(which lssd 2>/dev/null)" -o ${HPQLOGIC} = "true" ]; then
   HPQLOGIC=true
   echo "HP/Qlogic detected, setting HPQLOGIC=true"
-  echo "Sometimes this driver is not configured/used properly. If the"
+  echo "Sometimes this driver is misconfigured/used properly. If the"
   echo " system is using native mpio on top, force that option instead."
   SUCCESS=true
  else
@@ -371,18 +371,23 @@ runStep()
 displayOutput()
 {
  debug && set -x
+ #set -x
 
- export SUCCESS=$1
+ export SUCCESS="$1"
  export MSG="$2"
  export OUTPUTFILE=${ODIR}/adv-srv-${step}.out
+ linelength=80
  line="......................................................................."
- if [ ${SUCCESS} = "true" ]; then
+ if [ "${SUCCESS}" = "true" ]; then
   #echo "${MSG}......SUCCESS"
-  printf "%s %s [SUCCESS]\n" "$MSG" "${line:${#MSG}}"
+  #printf "%s %-10s [SUCCESS]\n" "$MSG" "${line}"
+  #printf '%s%*.*s%s\n' "$SUCCESS" 0 $((linelength - ${#SUCCESS} - ${#MSG} )) "$line" "$MSG"
+  printf '%s%*.*s%s\n' "$MSG" 0 $((linelength - 9 - ${#MSG} )) "$line" "[SUCCESS]"
  else
   #echo "${MSG}......FAILURE"
-  printf "%s %s [FAILURE]\n" "$MSG" "${line:${#MSG}}"
- fi
+  printf '%s%*.*s%s\n' "$MSG" 0 $((linelength - 9 - ${#MSG} )) "$line" "[FAILURE]"
+  #printf "%s %s [FAILURE]\n" "$MSG" "${line:-${#MSG}}"
+ fi #>>${LOG}
  lineBreak >>${LOG}
  echo "#### Output of ${step}, via ${OUTPUTFILE} ####" >>${LOG}
  cat ${OUTPUTFILE} >>${LOG}
@@ -476,13 +481,13 @@ validateFileSystems()
  ) | sort | tee ${ODIR}/mounted-filesystems-pre.out >>${ODIR}/adv-srv-${step}.out 2>&1
  lineBreak >>${ODIR}/adv-srv-${step}.out 2>&1
 
- echo "Filesystems that are either: not mounted but configured, or mounted but not configured" >>${ODIR}/adv-srv-${step}.out 2>&1
+ echo "Filesystems that are either: unmounted but configured, or mounted but unconfigured" >>${ODIR}/adv-srv-${step}.out 2>&1
  diff ${ODIR}/configured-filesystem-mountpoints.out ${ODIR}/mounted-filesystems-pre.out | egrep '<|>' | awk '{print $2}' |\
-  sort | tee ${ODIR}/filesystems-configured-or-mounted-but-not-both.out >>${ODIR}/adv-srv-${step}.out 2>&1
+  sort | tee ${ODIR}/filesystems-configured-or-mounted.out >>${ODIR}/adv-srv-${step}.out 2>&1
  lineBreak >>${ODIR}/adv-srv-${step}.out 2>&1
 
- echo "Filesystems that should be mounted but are not" >>${ODIR}/adv-srv-${step}.out 2>&1
- cat ${ODIR}/filesystems-configured-or-mounted-but-not-both.out |\
+ echo "Filesystems that should be mounted but are missing" >>${ODIR}/adv-srv-${step}.out 2>&1
+ cat ${ODIR}/filesystems-configured-or-mounted.out |\
  while read line
  do
   linux && grep "${line}" /etc/fstab | egrep -v 'noauto'
@@ -490,7 +495,7 @@ validateFileSystems()
   aix && cat /etc/filesystems | sed 's/\// /g'|sed -e '/./{H;$!d;}' -e 'x;/'"${line2}"':/!d;' |\
       egrep "mount.*automatic|mount.*true" >/dev/null && echo ${line}
   hpux && grep "${line}" /etc/fstab | egrep -v 'noauto'
- done | sort | tee ${ODIR}/filesystems-should-be-mounted-but-not.out >>${ODIR}/adv-srv-${step}.out 2>&1
+ done | sort | tee ${ODIR}/filesystems-should-be-mounted-but-missing.out >>${ODIR}/adv-srv-${step}.out 2>&1
  lineBreak >>${ODIR}/adv-srv-${step}.out 2>&1
  
  echo "OS Specific file systems checks" >>${ODIR}/adv-srv-${step}.out 2>&1
@@ -506,7 +511,7 @@ validateFileSystems()
    lslv ${lv} >${ODIR:-/stage/rhel_minor_upgrade/$(hostname)}/lslv-${lv}.out
    LABEL="$(echo $(grep LABEL ${ODIR:-/stage/rhel_minor_upgrade/$(hostname)}/lslv-${lv}.out|awk -F':' '{print $3}'))"
    CORRECT=$(df ${LABEL} 2>/dev/null | grep -c ${lv})
-   [[ ${CORRECT} -eq 1 ]] || echo "${lv} is labelled ${LABEL} but not mounted there"
+   [[ ${CORRECT} -eq 1 ]] || echo "${lv} is labelled ${LABEL} but missing there"
   done
  ) | sort | tee ${ODIR}/aix-specific-filesystems-checks.out >>${ODIR}/adv-srv-${step}.out 2>&1
  linux && echo "No Linux specific checks defined" >>${ODIR}/adv-srv-${step}.out 2>&1
@@ -561,7 +566,7 @@ gatherSANDetails()
 	 echo "/stage/mck_ks/bin/map_pp_pseudo2lun found, executing";
 	 /stage/mck_ks/bin/map_pp_pseudo2lun | tee ${ODIR}/map.pp 2>&1;
 	else
-	 echo "/stage/mck_ks/bin/map_pp_pseudo2lun not found, please extract lun_map_utils";
+	 echo "/stage/mck_ks/bin/map_pp_pseudo2lun missing, please extract lun_map_utils";
 	fi;
 	;;
   ${DATAPATH}) echo "Datapath query of all devices, available in ${ODIR}/datapath-query.out";
@@ -604,7 +609,7 @@ gatherSANDetails()
 	 echo "/stage/mck_ks/bin/mapOraDevs_hpqla.sh found, executing (oradevs.before)";
 	 /stage/mck_ks/bin/mapOraDevs_hpqla.sh >${ODIR}/oradevs.before;
 	else
-	 echo "/stage/mck_ks/bin/mapOraDevs_hpqla.sh not found, please extract lun_map_utils";
+	 echo "/stage/mck_ks/bin/mapOraDevs_hpqla.sh missing, please extract lun_map_utils";
 	fi
 	)
 	;;
@@ -652,7 +657,7 @@ copyFiles()
    hpux && cp -r ${file} ${ODIR}/backup-files/
    lineBreak
   else
-   echo "${file} not found, skipping"
+   echo "${file} missing, skipping"
    lineBreak
   fi
  done >>${ODIR}/adv-srv-${step}.out 2>&1 2>&1
@@ -740,7 +745,7 @@ checkASMDisks()
      ## Native MPIO uses mapper/mpath devices
      MPATHDEV=$(ls -lrt /dev/mapper|grep " ${MAJOR}, *${MINOR} "|awk '{print $NF}' |awk -F'p[0-9]' '{print $1}' )
      if [ "x" = "x${MPATHDEV}" ]; then
-      echo "MPATH Device not in use for this volume, trying to find sd* device"
+      echo "MPATH Device unconfigured for this volume, trying to find sd* device"
       ls -lrt /dev|grep " ${MAJOR}, *${MINOR} "
      else
       multipath -v2 -l ${MPATHDEV}
@@ -771,7 +776,7 @@ checkASMDisks()
   ;;
  esac
  else
-  echo "ASM is not detected, all checks will need to be manually completed"
+  echo "ASM is undetectable, all checks will need to be manually completed"
  fi >${ODIR}/adv-srv-${step}.out 2>&1 && SUCCESS=true || SUCCESS=false
 
  displayOutput ${SUCCESS} "Gathering ASM volume details"
@@ -782,13 +787,13 @@ setupREPO()
  debug && set -x
 
 if [ -f /etc/yum.repos.d/mck_stage_dvd_extras.repo -o -f /etc/yum.repos.d/mck_stage_dvd_main.repo ]; then
- echo "/etc/yum.repos.d/mck_stage_dvd_extras.repo or /etc/yum.repos.d/mck_stage_dvd_main.repo already exists, not modifying"
+ echo "/etc/yum.repos.d/mck_stage_dvd_extras.repo or /etc/yum.repos.d/mck_stage_dvd_main.repo already exists, ignoring"
 else
 
 cat >/etc/yum.repos.d/mck_stage_dvd_main.repo <<EOF
 #----
 # This is the McKesson HC Staging DVD location
-# If it is not mounted here, yum may throw errors
+# If it is missing here, yum may throw errors
 #----
 #[McKesson Stage DVD Main]
 #name=Red Hat Linux - McKesson Stage DVD Main
@@ -798,16 +803,14 @@ EOF
 cat >/etc/yum.repos.d/mck_stage_dvd_extras.repo <<EOF
 #----
 # This is the McKesson HC Staging DVD location
-# If it is not mounted here, yum may throw errors
+# If it is missing here, yum may throw errors
 #----
 #[McKesson Stage DVD Extras]
 #name=Red Hat Linux - McKesson Stage DVD Extras
 #baseurl=file:///media/cdrecorder/extras/software/oss
 EOF
 
- echo 'yum repositories setup based on /media/cdrecorder. If that is not the
- location the media will be mounted to, please modify the files created
- in /etc/yum.repo.d. You will need to uncomment the files to use them.'
+ echo 'yum repositories setup based on /media/cdrecorder. If the media will be mounted to another location, please modify the files created in /etc/yum.repo.d. You will need to uncomment the files to use them.'
 fi >${ODIR}/adv-srv-${step}.out
 
  displayOutput true "Create YUM repositories"
@@ -877,7 +880,7 @@ checkORACLEASM()
 
  if [ ${ASM} = "true" ]; then
  linux && if [ ${HPQLOGIC} = "true" -o ${RDAC} = "true" ]; then
-  echo "This check does not 'require' correction for this driver"
+  echo "This check can be ignored for this driver"
   echo "but can be corrected by setting the following:"
   echo " ORACLEASM_SCANORDER=\"sd\""
   echo " ORACLEASM_SCANEXCLUDE=\"\""
@@ -898,11 +901,11 @@ checkORACLEASM()
  fi
  lineBreak
  linux && echo "You should see the current SCANORDER and SCANEXCLUDE settings below."
- linux && echo "If they do not match the recommended settings above, a correction is required."
+ linux && echo "If they differ from the recommended settings above, a correction is required."
  linux && echo "This will require a downtime to correct in most situations."
  linux && egrep 'SCANORDER=|SCANEXCLUDE=' /etc/sysconfig/oracleasm
  else
-  echo "ASM is not detected, all checks will need to be manually completed"
+  echo "ASM is undetectable, all checks will need to be manually completed"
  fi >${ODIR}/adv-srv-${step}.out 2>&1
 
  displayOutput true "Check /etc/sysconfig/oracleasm"
@@ -936,7 +939,7 @@ checkDeadSANPaths()
    echo "Number of non-optimal paths: ${NUMPATHS}";;
   ${PCMPATH}) pcmpath query device | grep 'Host[0-9]Channel[0-9]'|grep -v NORMAL;;
   ${NATIVEMPIO}) linux && multipath -v2 -ll|grep '^ \\_'|grep -v '\[active\]\[ready\]';;
-  ${HPQLOGIC}) echo "This must be manually checked, as this driver does not monitor inactive paths, and is strictly failover, not load balanced"
+  ${HPQLOGIC}) echo "This must be manually checked, as this driver does no monitoring for inactive paths, and is strictly failover, rather than load balanced"
            echo " Please report to the Advanced Service team how you perform this check";;
   ${NOSAN}) echo "No dead paths on NOSAN";;
  esac >>${ODIR}/adv-srv-${step}.out 2>&1
@@ -961,7 +964,7 @@ checkMSEVols()
  InstalledMSE && MSE=true || MSE=false
 
  if [ "${MSE}" = "false" ]; then
-  echo "MSE does not appear to be installed here. Check /hbo/etc/defaultdbname" >${ODIR}/adv-srv-${step}.out 2>&1
+  echo "MSE appear to be missing here. Check /hbo/etc/defaultdbname" >${ODIR}/adv-srv-${step}.out 2>&1
  elif [ "${MSE}" = "true" ]; then
   source /hbo/etc/defaultdbname
   echo "Proceeding with MSE volume documentation in ${ODIR}/mse-volumes.out" >${ODIR}/adv-srv-${step}.out 2>&1
@@ -981,7 +984,7 @@ checkMSEVols()
   done >>${ODIR}/all-mse-volumes-details.tmp 2>&1
   mv ${ODIR}/all-mse-volumes-details.tmp ${ODIR}/mse-volume-details.out >>${ODIR}/adv-srv-${step}.out 2>&1
  else
-  echo "Not sure how we got to not true or false for InstalledMSE function" >${ODIR}/adv-srv-${step}.out 2>&1
+  echo "Unsure how we got to neither true or false for InstalledMSE function" >${ODIR}/adv-srv-${step}.out 2>&1
  fi
 
  displayOutput true "Document MSE Vols"
@@ -994,7 +997,7 @@ checkMSEvg()
  InstalledMSE && MSE=true || MSE=false
 
  if [ "${MSE}" = "false" ]; then
-  echo "MSE does not appear to be installed here. Check /hbo/etc/defaultdbname"
+  echo "MSE appear to be missing here. Check /hbo/etc/defaultdbname"
  elif [ "${MSE}" = "true" ]; then
   source /hbo/etc/defaultdbname
   echo "Proceeding with MSE VG documentation, details below"
@@ -1006,7 +1009,7 @@ checkMSEvg()
    linux && vgdisplay ${vg}
   done
  else
-  echo "Not sure how we got to not true or false for InstalledMSE function"
+  echo "Unsure how we got to neither true or false for InstalledMSE function"
  fi >${ODIR}/adv-srv-${step}.out 2>&1
 
  displayOutput true "Document MSE vg"
@@ -1016,10 +1019,10 @@ checkMSEKernel()
 {
  debug && set -x
  #InstalledMSE && MSE=true || MSE=false
- # This check can proceed even if MSE is not "installed", i.e. on secondary nodes in a cluster
+ # This check can proceed even if MSE is missing, i.e. on secondary nodes in a cluster
  MSE=true
  if [ "${MSE}" = "false" ]; then
-  echo "MSE does not appear to be installed here. Check /hbo/etc/defaultdbname"
+  echo "MSE appear to be missing here. Check /hbo/etc/defaultdbname"
  elif [ "${MSE}" = "true" ]; then
   echo "Proceeding to check various MSE upgrade parameters"
   linux && lineBreak
@@ -1029,8 +1032,6 @@ checkMSEKernel()
   linux && [[ $(sysctl -q kernel.shmmax|awk -F'=' '{print $2}') -ge 134217728 ]] && echo true || echo false
   linux && echo "Checking for sufficient disk space in /hbo (25kb)"
   linux && [[ $(df /hbo|tail -n 1|awk '{print $2}') -ge 25000 ]] && echo true || echo false
- else
-  echo "Not sure how we got to not true or false for InstalledMSE function"
  fi >${ODIR}/adv-srv-${step}.out 2>&1
  displayOutput true "Checking MSE kernel options"
 }
@@ -1040,13 +1041,11 @@ checkMSEErrors()
  debug && set -x
  InstalledMSE && MSE=true || MSE=false
  if [ "${MSE}" = "false" ]; then
-  echo "MSE does not appear to be installed here. Check /hbo/etc/defaultdbname"
+  echo "MSE appear to be missing here. Check /hbo/etc/defaultdbname"
  elif [ "${MSE}" = "true" ]; then
   source /hbo/etc/defaultdbname
   echo "Now checking for MSE internal errors (/hbo/bin/mseverify -u1 -RO)"
   /hbo/bin/mseverify -u1 -RO | grep Errors
- else
-  echo "Not sure how we got to not true or false for InstalledMSE function"
  fi >${ODIR}/adv-srv-${step}.out 2>&1
  displayOutput true "Checking for MSE internal Errors"
 }
@@ -1221,7 +1220,7 @@ getTSM()
   tar cvzf ${ODIR}/backup-files/tsm.tar.gz ${FILES}
   rpm -qa | grep TIV
  else
-  echo "TSM config files not found, skipping"
+  echo "TSM config files missing, skipping"
  fi >${ODIR}/adv-srv-${step}.out 2>&1
 
  displayOutput true "Gather TSM details"
@@ -1234,7 +1233,7 @@ getHPMVer()
  if [ -d /apg ]; then
   echo "HPM Application version is: $(cat /apg/pdsver.dat)"
  else
-  echo "HPM directory not found (/apg)"
+  echo "HPM directory missing (/apg)"
  fi >${ODIR}/adv-srv-${step}.out 2>&1
 
  displayOutput true "Gather HPM Version"
@@ -1257,7 +1256,7 @@ then
  cat ${PLUGINDIR}/${plugin}
  echo
 else
- echo "RHN plugin not found"
+ echo "RHN plugin missing"
 fi >${ODIR}/adv-srv-${step}.out 2>&1
 
 displayOutput true "Disable RHN plugin"
