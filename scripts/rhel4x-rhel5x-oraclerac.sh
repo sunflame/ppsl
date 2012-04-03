@@ -98,15 +98,7 @@ NODELIST="${PRIMARYNODE} ${SECONDARYNODE}"
  cat /etc/sysconfig/network
 
  # Rebuild eth1 config
- cat >/etc/sysconfig/network-scripts/ifcfg-eth1 <<EOF
-# eth1
-DEVICE=eth1
-ONBOOT=yes
-BOOTPROTO=static
-IPADDR=1.1.1.2
-NETMASK=255.255.255.0
-HWADDR="00:21:5E:73:33:1A"
-EOF
+ tar xvf ${ODIR}/backup-files/etc.tar.gz etc/sysconfig/network-scripts/ifcfg-eth1 -C /tmp
 
  # We can ignore this step if desired, as it will happen when the box is rebooted
  service network restart
