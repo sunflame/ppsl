@@ -195,8 +195,9 @@ runStep()
   export step
   ${step}
   #printf '%-74s %-5s\n' "${TASK}" "${STATUS}"
-  line="......................................................................."
-  printf "%s %s [${STATUS}]\n" "$TASK" "${line:${#TASK}}"
+  #line="......................................................................."
+  #printf "%s %s [${STATUS}]\n" "$TASK" "${line:${#TASK}}"
+  displayOutput "${STATUS}" "${TASK}"
  done
 }
 
@@ -209,15 +210,23 @@ runStep()
 displayOutput()
 {
  debug && set -x
+ #set -x
 
- export SUCCESS=$1
+ export SUCCESS="$1"
  export MSG="$2"
  export OUTPUTFILE=${ODIR}/adv-srv-${step}.out
- if [ ${SUCCESS} = "true" ]; then
-  echo "${MSG}......SUCCESS"
+ linelength=80
+ line="......................................................................."
+ if [ "${SUCCESS}" = "true" ]; then
+  #echo "${MSG}......SUCCESS"
+  #printf "%s %-10s [SUCCESS]\n" "$MSG" "${line}"
+  #printf '%s%*.*s%s\n' "$SUCCESS" 0 $((linelength - ${#SUCCESS} - ${#MSG} )) "$line" "$MSG"
+  printf '%s%*.*s%s\n' "$MSG" 0 $((linelength - 9 - ${#MSG} )) "$line" "[SUCCESS]"
  else
-  echo "${MSG}......FAILURE"
- fi
+  #echo "${MSG}......FAILURE"
+  printf '%s%*.*s%s\n' "$MSG" 0 $((linelength - 9 - ${#MSG} )) "$line" "[FAILURE]"
+  #printf "%s %s [FAILURE]\n" "$MSG" "${line:-${#MSG}}"
+ fi #>>${LOG}
  lineBreak >>${LOG}
  echo "#### Output of ${step}, via ${OUTPUTFILE} ####" >>${LOG}
  cat ${OUTPUTFILE} >>${LOG}
