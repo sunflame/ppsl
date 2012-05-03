@@ -1096,6 +1096,25 @@ OracleKickstartDetails()
 
    oem ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
  "
+ if [ "${SERVER_TYPE}x" = "webappx" ]; then
+  SIPADDR=$(grep IPADDR /etc/sysconfig/network-scripts/ifcfg-eth1)
+  echo " $IPADDR
+  $HOSTNAME
+  $NETMASK
+  $DEFAULTGW
+  $PDNS
+  $SDNS
+  $SPEED
+  $DOMAIN
+  $SEARCH
+  $NTPS
+  $MAILRELAY
+  $MOTD
+  $TZONE
+  ${SIPADDR:-N/A}
+
+   webapp ip=${IPADDR} nm=${NETMASK} gw=${DEFAULTGW} ns=${PDNS} hn=${HOSTNAME} gui=1
+ "
  elif [ -f /etc/mck/rac.conf ]; then
   FILE=/etc/mck/rac.conf
   RACNODES=$(grep ^RAC_NODE\\[ ${FILE} |awk -F'=' '{print $2}'|tr '\n' ' ')
